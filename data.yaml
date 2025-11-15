@@ -1,0 +1,11 @@
+# object_detection_yolo/data.yaml
+# Update 'path' to point to the folder that contains train/val/images and train/val/labels
+path: ../data/yolo_dataset  # <- update this to your dataset root
+train: images/train
+val: images/val
+
+# number of classes
+nc: 1
+
+# class names
+names: ['pothole']

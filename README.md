@@ -1,110 +1,69 @@
-# Smart-pothole-detection-system
-  A deep learning–based solution for automatic pothole detection using Convolutional Neural Networks (CNNs) and image processing. This project leverages Python, OpenCV, and TensorFlow/Keras to detect potholes from road images or video frames with high accuracy. The system preprocesses input images, extracts features using a trained CNN model.  
-### by **Simerjeet Tech**
+# YOLOv8 Pothole Detection
 
-The main approach is:
+Requirements:
+pip install ultralytics
 
-## ⭐ 1. CNN Classifier + OpenCV (Primary Method)
-- OpenCV finds regions that *look like potholes*
-- CNN (MobileNetV2) classifies each region as pothole / not pothole
 
-This repository also includes:
 
-## ⭐ 2. YOLOv8 Object Detection (Advanced Module)
-- Detects potholes with bounding boxes (bonus module)
+Prepare dataset in YOLO format (images + labels) and update `data.yaml`.
 
-## ⭐ 3. Streamlit Web App
-- Upload an image → get pothole detection instantly
+Train:
+python yolo_train.py --data_yaml data.yaml --model yolov8n.pt --epochs 50
 
-## ⭐ 4. Google Colab Notebooks (Modular)
-- Training Notebook  
-- Evaluation Notebook  
-- Inference Notebook  
-- YOLOv8 Notebook  
+Infer:
 
----
+python yolo_inference.py --weights runs/yolo/pothole_yolov8/weights/best.pt --source ../examples --out ../yolo_outputs
 
-# 📁 Project Structure
+Notes & Tips
 
-```
-smart-pothole-detection/
-│
-├── src/                         # Main detection system
-│   ├── data_prep.py
-│   ├── model.py
-│   ├── train.py
-│   ├── evaluate.py
-│   ├── inference_cv_and_cnn.py
-│   └── visualize.py
-│
-├── object_detection_yolo/       # YOLOv8 bonus module
-│   ├── yolo_train.py
-│   └── yolo_inference.py
-│
-├── webapp/                      # Streamlit App
-│   ├── app.py
-│   └── utils.py
-│
-├── notebooks/                   # All Colab notebooks
-│   ├── CNN Training (link)
-│   ├── Evaluation (link)
-│   ├── Inference (link)
-│   └── YOLO Training (link)
-│
-├── examples/                    # Example images (add your own)
-│
-├── requirements.txt
-├── Dockerfile
-├── LICENSE
-└── README.md
-```
+. Use labelImg or Roboflow to label images in YOLO format. Each label file must match its image filename and contain lines: class x_center y_center width height (normalized).
 
----
+. ultralytics requires recent Python (3.8+). If you run into GPU issues, try device='cpu' in model.train() / model.predict().
 
-# 🚀 Getting Started
+. The data.yaml path field should be the parent folder that contains images/ and labels/ subfolders. Example:
 
-## 1. Install dependencies
-```
+data/yolo_dataset/
+  images/
+    train/
+    val/
+  labels/
+    train/
+    val/
+
+
+How to run the Streamlit app
+
+1. From repository root, install requirements (if not already):
+
 pip install -r requirements.txt
-```
 
-## 2. Train CNN Model
-```
-python src/train.py --data_dir data --epochs 20
-```
+2. Run:
 
-## 3. Evaluate
-```
-python src/evaluate.py --model_path models/best_model.h5
-```
-
-## 4. Run Inference (CNN + OpenCV)
-```
-python src/inference_cv_and_cnn.py --model_path models/best_model.h5 --input examples/
-```
-
----
-
-# 🌐 Run the Web App
-
-```
 streamlit run webapp/app.py
-```
 
----
 
-# 🎯 YOLOv8 Training (Advanced)
+3. Place your trained Keras model at:
 
-```
-python object_detection_yolo/yolo_train.py
-```
+models/best_model.h5
+# or
+models/final_model.h5
 
----
 
-# ✨ Author  
-**Simerjeet Tech**
+How to build & run (local, CPU)
 
----
+1. Build the image
+docker build -t smart-pothole-app:latest .
 
-# 📝 License  
-MIT License
+
+2. Run the container (mount your local models/ and examples/ so you can update models without rebuilding)
+
+docker run --rm -it \
+  -p 8501:8501 \
+  -v $(pwd)/models:/app/models \
+  -v $(pwd)/examples:/app/examples \
+  -v $(pwd)/data:/app/data \
+  --name smart-pothole \
+  smart-pothole-app:latest
+
+
+Open your browser at [http://localhost:8501](http://localhost:8501).
