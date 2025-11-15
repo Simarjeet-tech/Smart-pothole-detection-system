@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.h5
+*.pt
+*.ckpt
+models/
+data/
+logs/
+runs/
+.env
+.vscode/
+.git
+.ipynb_checkpoints/

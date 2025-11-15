@@ -1,0 +1,17 @@
+# core
+numpy
+pandas
+matplotlib
+scikit-learn
+tqdm
+Pillow
+opencv-python-headless
+
+# deep learning
+tensorflow   # or tensorflow==2.12.0  (choose a TF version compatible with host CUDA)
+
+# YOLO
+ultralytics
+
+# web app
+streamlit

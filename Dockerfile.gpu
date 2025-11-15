@@ -1,0 +1,60 @@
+# Use NVIDIA CUDA + cuDNN runtime base (Ubuntu 22.04)
+# This image contains CUDA 11.8 and cuDNN 8 (suitable for modern TF GPU builds).
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+LABEL maintainer="Simerjeet Tech"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# -- System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    wget \
+    git \
+    curl \
+    ffmpeg \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- Create working dir
+WORKDIR /app
+
+# -- Copy dependency files first for better layer caching
+COPY requirements.txt /app/requirements.txt
+COPY .dockerignore /app/.dockerignore
+
+# -- Python and pip
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv && \
+    python3 -m pip install --upgrade pip setuptools wheel
+
+# -- Install Python packages
+# NOTE: TensorFlow GPU-compatible package will be installed from pip.
+#       Adjust the tensorflow version below if you need a specific TF/CUDA pairing.
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# If you want to force a specific TensorFlow GPU version (uncomment and edit)
+# RUN pip install --no-cache-dir tensorflow==2.12.0
+
+# -- Copy the rest of the project
+COPY . /app
+
+# Make folders for mounting
+RUN mkdir -p /app/models /app/data /app/logs /app/outputs
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Streamlit env (headless)
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ENABLECORS=false
+
+# Default entry: run streamlit (change if you want to start a shell/experiment)
+CMD ["streamlit", "run", "webapp/app.py", "--server.port=8501", "--server.headless=true"]
